@@ -1,0 +1,20 @@
+name: CI
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm install -g npm
+      - run: npm install
+      - run: npm run lint
+      - run: docker build -t api ./apps/api
+      - uses: aws-actions/amazon-ecr-login@v1
+      - run: |
+          docker tag api:latest ${{ secrets.ECR_REPO }}:latest
+          docker push ${{ secrets.ECR_REPO }}:latest
